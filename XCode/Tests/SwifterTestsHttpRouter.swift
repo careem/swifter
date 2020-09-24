@@ -85,6 +85,22 @@ class SwifterTestsHttpRouter: XCTestCase {
         XCTAssertNil(router.route(nil, path: "/a/e/f/g"))
     }
 
+    func testHttpRouterMultiplePathSegmentWildcardsTail() {
+
+        let router = HttpRouter()
+
+        router.register(nil, path: "/a/:b", handler: { _ in
+            return .ok(.html("OK"))
+        })
+
+        XCTAssertNil(router.route(nil, path: "/"))
+        XCTAssertNil(router.route(nil, path: "/a"))
+        XCTAssertNotNil(router.route(nil, path: "/a/b/c/d/e/f/g"))
+        XCTAssertNotNil(router.route(nil, path: "/a/e/f/g"))
+
+        XCTAssertEqual(router.route(nil, path: "/a/b/c/d/e/f/g")?.0[":b"], "b/c/d/e/f/g")
+    }
+
     func testHttpRouterEmptyTail() {
 
         router.register(nil, path: "/a/b/", handler: { _ in
@@ -154,14 +170,14 @@ class SwifterTestsHttpRouter: XCTestCase {
     func testHttpRouterHandlesOverlappingPathsInDynamicRoutes() {
 
         let request = HttpRequest()
-
-        let firstVariableRouteExpectation = expectation(description: "First Variable Route")
-        var foundFirstVariableRoute = false
-        router.register("GET", path: "a/:id") { _ in
-            foundFirstVariableRoute = true
-            firstVariableRouteExpectation.fulfill()
-            return HttpResponse.accepted
-        }
+        
+//        let firstVariableRouteExpectation = expectation(description: "First Variable Route")
+//        var foundFirstVariableRoute = false
+//        router.register("GET", path: "a/:id") { request in
+//            foundFirstVariableRoute = true
+//            firstVariableRouteExpectation.fulfill()
+//            return HttpResponse.accepted
+//        }
 
         let secondVariableRouteExpectation = expectation(description: "Second Variable Route")
         var foundSecondVariableRoute = false
@@ -173,7 +189,7 @@ class SwifterTestsHttpRouter: XCTestCase {
 
         let firstRouteResult = router.route("GET", path: "a/b")
         let firstRouterHandler = firstRouteResult?.1
-        XCTAssertNotNil(firstRouteResult)
+        XCTAssertNil(firstRouteResult)
         _ = firstRouterHandler?(request)
 
         let secondRouteResult = router.route("GET", path: "a/b/c")
@@ -182,21 +198,21 @@ class SwifterTestsHttpRouter: XCTestCase {
         _ = secondRouterHandler?(request)
 
         waitForExpectations(timeout: 10, handler: nil)
-        XCTAssertTrue(foundFirstVariableRoute)
+//        XCTAssertTrue(foundFirstVariableRoute)
         XCTAssertTrue(foundSecondVariableRoute)
     }
 
     func testHttpRouterShouldHandleOverlappingRoutesInTrail() {
 
         let request = HttpRequest()
-
-        let firstVariableRouteExpectation = expectation(description: "First Variable Route")
-        var foundFirstVariableRoute = false
-        router.register("GET", path: "/a/:id") { _ in
-            foundFirstVariableRoute = true
-            firstVariableRouteExpectation.fulfill()
-            return HttpResponse.accepted
-        }
+        
+//        let firstVariableRouteExpectation = expectation(description: "First Variable Route")
+//        var foundFirstVariableRoute = false
+//        router.register("GET", path: "/a/:id") { request in
+//            foundFirstVariableRoute = true
+//            firstVariableRouteExpectation.fulfill()
+//            return HttpResponse.accepted
+//        }
 
         let secondVariableRouteExpectation = expectation(description: "Second Variable Route")
         var foundSecondVariableRoute = false
@@ -221,7 +237,7 @@ class SwifterTestsHttpRouter: XCTestCase {
 
         let secondRouteResult = router.route("GET", path: "/a/b")
         let secondRouterHandler = secondRouteResult?.1
-        XCTAssertNotNil(secondRouteResult)
+        XCTAssertNil(secondRouteResult)
         _ = secondRouterHandler?(request)
 
         let thirdRouteResult = router.route("GET", path: "/a/b/b")
@@ -230,7 +246,7 @@ class SwifterTestsHttpRouter: XCTestCase {
         _ = thirdRouterHandler?(request)
 
         waitForExpectations(timeout: 10, handler: nil)
-        XCTAssertTrue(foundFirstVariableRoute)
+//        XCTAssertTrue(foundFirstVariableRoute)
         XCTAssertTrue(foundSecondVariableRoute)
         XCTAssertTrue(foundThirdVariableRoute)
     }
